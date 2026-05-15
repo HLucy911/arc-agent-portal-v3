@@ -246,7 +246,12 @@ export async function completeJob(
 // ─── Extract jobId from tx receipt ──────────────────────────────────────────
 
 export async function extractJobIdFromTx(txHash: Hex): Promise<bigint | null> {
-  const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+  // Arc testnet can be very slow — poll manually up to 3 minutes
+  const receipt = await publicClient.waitForTransactionReceipt({
+    hash: txHash,
+    timeout: 180_000,
+    pollingInterval: 3_000,
+  });
   for (const log of receipt.logs) {
     try {
       const decoded = decodeEventLog({
